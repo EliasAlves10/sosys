@@ -1,0 +1,116 @@
+div.newAnswer { float: left; width: 100%; }
+div.newAnswer > ul { margin: 0; padding: 0; list-style: none; }
+div.newAnswer > ul > li { position: relative; background: none repeat scroll 0 0 #F8F8F8; border-color: #E0E0E0; border-style: solid; border-width: 1px; float: left; margin-top: 10px; position: relative; width: 763px; }
+div.newAnswer > ul > li div.question { padding-right: 26px; float: left; min-height: 50px; padding: 10px; width: 717px; }
+div.newAnswer > ul > li div.answer { border-top: 1px solid #E0E0E0; display: none; float: left; padding: 10px; width: 743px; }
+div.newAnswer > ul > li div.answer span.feedback { }
+div.newAnswer > ul > li div.answer form { width: 740px; float: left; }
+
+div.newAnswer .foto { float: left; width: 50px; }
+div.newAnswer .foto a { float: left; }
+div.newAnswer .foto a img { float: left; }
+
+div.newAnswer .title { float: right; font-style: italic; font-weight: bold; margin-right: 0; width: 650px; }
+div.newAnswer .answer .title { width: 670px; }
+
+div.newAnswer .description { float: right; line-height: 15px; margin-top: 5px; width: 650px; }
+div.newAnswer .description textarea { background: url("../images/layout/input_bg.gif") repeat-x scroll center top #FFFFFF; border: 1px solid #BBBBBB; color: #5A6C78; font: 13px Arial,Helvetica,Verdana,sans-serif; margin: 0; outline: 0 none; padding: 5px; resize: vertical; width: 658px; }
+div.newAnswer .answer .description { width: 670px; }
+
+div.newAnswer .options { position: absolute; right: 10px; height: 50px; margin-left: 10px; }
+div.newAnswer .options * { float: left; }
+div.newAnswer .options ul { list-style: none; padding: 0; }
+
+div.answer .commands { float: right; margin-top: 10px; width: 670px; }
+div.answer .commands label { float: left; line-height: 27px; margin-right: 10px; }
+div.answer .commands label input { float: left; margin: 7px; }
+div.answer .commands label input.btn_small { margin: 0; }
+div.answer .commands span.feedback { float: right; line-height: 27px; }
+
+#avalicao { float: left; width: 100%; }
+#avalicao ul { margin: 0; padding: 0; }
+#avalicao ul li, #opinioes ul li { border-bottom: 1px solid #E0E0E0; float: left; list-style: none outside none; padding-top: 10px; padding-bottom: 10px; position: relative; width: 100%; background-color: white !important; }
+#avalicao ul li.odd, #opinioes ul li.odd { background-color: #f7f7f7 !important; }
+#avalicao ul li div.pergunta { float: left; font-size: 13px; font-weight: bold; height: 33px; line-height: 16px; padding-left: 5px; width: 500px; position: absolute; display: table; margin-left: 10px; }
+#avalicao ul li div.pergunta span { display: table-cell; vertical-align: middle; }
+#avalicao ul li div.resposta { float: right; width: 180px; margin-right: 30px; height: 33px; }
+#avalicao ul li div.resposta .stars { margin: 9px; float: left; }
+#avalicao ul li div.resposta span { float: right; color: black; font-size: 11px; font-weight: bold; width: 20px; text-align: left; }
+#avalicao ul li div.resposta span.mensagem { float: right; width: 22px; line-height: 23px; text-align: right; margin-top: 4px; text-indent: -3000em; }
+#avalicao ul li div.resposta span.mensagem.yes { background: url('../images/layout/icon_like.png') repeat-x 0 0; }
+#avalicao ul li div.resposta span.mensagem.no { background: url('../images/layout/icon_like.png') repeat-x -22px -24px; }
+#avalicao ul li div.resposta span.barra { text-indent: -30px; }
+#avalicao ul li div.resposta span.porcentagem { position: absolute; left: -50px; text-align: right; width: 35px; background: none !important; }
+#avalicao ul li div.resposta span.etiqueta { position: absolute; background: none !important; font-weight: normal; right: -25px; }
+#avalicao ul li div.resposta div.resposta-positivo { float: left; width: 100%; margin-bottom: 5px; position: relative; border-bottom: 0 none; border-right: 1px solid #41C619; }
+#avalicao ul li div.resposta div.resposta-positivo span { background-color: #41C619; }
+#avalicao ul li div.resposta div.resposta-negativo { float: left; width: 100%; position: relative; border-top: 0 none; border-right: 1px solid #FE5B2D; }
+#avalicao ul li div.resposta div.resposta-negativo span { background-color: #FE5B2D; }
+
+#avaliacoes { background: none repeat scroll 0 0 #F8F8F8; border: 1px solid #E0E0E0; float: left; margin-top: 10px; padding: 10px; width: 743px; }
+#avaliacoes form { float: left; width: 100%; }
+#avaliacoes form div.title { float: right; font-weight: bold; width: 680px; margin-bottom: 10px; }
+#avaliacoes form div.box { float: left; width: 100%; }
+#avaliacoes form div.box textarea { background: url("../images/layout/input_bg.gif") repeat-x scroll center top #FFFFFF; border: 1px solid #BBBBBB; color: #5A6C78; font: 13px Arial,Helvetica,Verdana,sans-serif; margin: 5px 0 10px; outline: 0 none; padding: 5px; width: 730px; resize: vertical; }
+#avaliacoes form div.commands { float: left; width: 100%; }
+#avaliacoes form div.commands.active { background: url("../images/layout/icon_loader2.gif") no-repeat scroll right center transparent; }
+
+#avaliacoes form div.commands label {  }
+#avaliacoes form div.commands label input {  }
+#avaliacoes form div.commands label span {  }
+#avaliacoes form div.commands span.feedback { float: right; line-height: 27px; }
+
+#avaliacoes form div.commands { float: right; width: 680px; margin-top: 10px; }
+#avaliacoes form .commands label { float: left; line-height: 27px; margin-right: 10px; }
+#avaliacoes form .commands label input { float: left; margin: 7px; }
+#avaliacoes form .commands label input.btn_small { margin: 0; }
+#avaliacoes form .commands label span {  }
+#avaliacoes form .commands span.feedback { float: right; line-height: 27px; }
+
+#avaliacoes form .foto { float: left; width: 50px; }
+#avaliacoes form .foto a { float: left; }
+#avaliacoes form .foto a img { float: left; }
+
+#avaliacoes form .title { float: right; font-style: italic; font-weight: bold; margin-right: 0; width: 650px; }
+#avaliacoes form .answer .title { width: 670px; }
+
+#avaliacoes form .description { float: right; line-height: 15px; width: 680px; }
+#avaliacoes form .description textarea { height: 100px; background: url("../images/layout/input_bg.gif") repeat-x scroll center top #FFFFFF; border: 1px solid #BBBBBB; color: #5A6C78; font: 13px Arial,Helvetica,Verdana,sans-serif; margin: 0; outline: 0 none; padding: 5px; resize: vertical; width: 668px; }
+#avaliacoes form .answer .description { width: 670px; }
+
+#avaliacoes form .options { position: absolute; right: 10px; height: 50px; margin-left: 10px; }
+#avaliacoes form .options * { float: left; }
+#avaliacoes form .options ul { list-style: none; padding: 0; }
+#avaliacoes form .options ul li {  }
+#avaliacoes form .options ul li a {  }
+#avaliacoes form .options ul li a img {  }
+
+#opinioes { float: left; width: 100%; }
+#opinioes ul { float: left; width: 100%; margin: 0; padding: 0; }
+#opinioes ul li { border-bottom: 1px solid #E0E0E0; float: left; list-style: none outside none; margin-top: 10px; padding-bottom: 10px; position: relative; width: 100%; }
+#opinioes ul li div.pergunta { float: left; font-size: 13px; font-weight: bold; }
+#opinioes ul li div.resposta { position: absolute; right: 0; top: -2px; }
+#opinioes ul li div.resposta label { float: left; margin-left: 5px; overflow: hidden; width: 22px; height: 23px; }
+#opinioes ul li div.resposta span { cursor: pointer; background: url("../images/layout/icon_like.png") repeat scroll 0 0 transparent; float: left; height: 23px; text-indent: -2000px; width: 100%; }
+#opinioes ul li div.resposta input { display: none; }
+#opinioes ul li div.resposta label.respostasim span { background-position: 0 0; }
+#opinioes ul li div.resposta label.respostasim span.checked { background-position: 0px -23px; }
+#opinioes ul li div.resposta label.respostanao span { background-position: -22px 0px; }
+#opinioes ul li div.resposta label.respostanao span.checked { background-position: -22px -24px; }
+
+div.divItemRating { float: left; width: 100%; margin-top:10px; margin-bottom:15px; }
+div.divItemRating div.divItemText { font-size: 22px; float: left; }
+div.divItemRating div.divItemRate { background: url('../images/layout/starbig.gif') repeat-x 0 0px; float: right; height: 32px; width: 160px; margin: 0 0 0 0; padding: 0 0 0 0; }
+div.divItemRating div.divItemRate .divItemRateItem { background: url('../images/layout/starbig.gif') repeat-x 0 -64px; float: left; height: 32px; text-indent: -500em; }
+
+div.divItemRating16 { float: left; width: 80px; margin-top:10px; margin-bottom:15px; }
+div.divItemRating16 div.divItemRate { background: url('../images/layout/star.gif') repeat-x 0 0px; float: right; height: 16px; width: 80px; margin: 0 0 0 0; padding: 0 0 0 0; }
+div.divItemRating16 div.divItemRate .divItemRateItem { background: url('../images/layout/star.gif') repeat-x 0 -32px; float: left; height: 16px; text-indent: -250em; }
+
+.contentTitle { margin-bottom: 5px; }
+.contentTitle { margin: 0; }
+.contentTitle .icon { padding-top: 7px; width: 32px; float: left; }
+.contentTitle .title { margin-left: 10px; float: left; }
+.contentTitle .subtitle { float: right; padding-top: 5px; }
+
+.middle-content { width: 765px; margin-bottom: 50px; }

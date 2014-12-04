@@ -1,0 +1,12 @@
+@charset "ISO-8859-1";
+@import url(https://fonts.googleapis.com/css?family=Asap:400,700);
+@import url(https://fonts.googleapis.com/css?family=Dosis);
+
+widget-body.widget-forms clearfix.positionCRM{
+position:absolute;
+left: 359px;
+top:339px;
+width: 990px;
+height:990px;
+
+}

@@ -1,0 +1,27 @@
+@charset "ISO-8859-1";
+
+/* Style Sobre bars components*/
+
+.componente1{
+width:1060px;
+height:200px;
+}
+.conter1{
+position:relative;
+right: 280px;
+top:-50px;
+}
+.componente2{
+width:1060px;
+height:170px;
+}
+.conter2{
+position:relative;
+right: 248px;
+top:-50px;
+}
+.conter3{
+position:relative;
+right: 248px;
+top:-50px;
+}

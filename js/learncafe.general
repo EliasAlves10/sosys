@@ -1,0 +1,1071 @@
+//Setup a new pseudo to jQuery
+jQuery.expr[":"].Contains = jQuery.expr.createPseudo(function (arg) {
+    return function (elem) {
+        return jQuery(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+    };
+});
+
+$.cookie.path = '/';
+
+var FBInst;
+var GPInst;
+
+$(document).ready(function () {
+    //Mostrar lista
+    $(".mostrarLista").click(function () {
+        $(".listaOculta").slideToggle("fast");
+    });
+
+    //start to track user
+    learn.track.boot();
+    learn.boot();
+    //sets get.hide to 1 for all fancybox calls
+    $(".fancybox").fancybox({
+        ajax: {
+            data : 'hide=1'
+        }
+    });
+
+    $("tr:odd").addClass("row");
+    $("tr:not(.row)").addClass("even");
+
+    if ($('#contador ul').length > 0)
+        $('#contador ul').cycle({
+            fx: 'scrollHorz',
+            speed: 'fast',
+            timeout: 8000,
+            next: '#contadorNext',
+            prev: '#contadorPrev'
+        });
+    if ($('#slideContent').length > 0)
+        $('#slideContent').cycle({
+            timeout: 7000,
+            speed: 500,
+            slideResize: false,
+            pager: '#slideNav'
+        });
+
+    if ($('#tabs').length > 0) {
+        $('.tab').hide();
+        $('#tabs div:first').show();
+        $('#tabs ul li:first').addClass('active');
+
+        $('#tabs ul li a').click(function () {
+            $('#tabs ul li').removeClass('active');
+            $(this).parent().addClass('active');
+            var currentTab = $(this).attr('href');
+            $('.tab').hide();
+            $(currentTab).show();
+            return false;
+        });
+    }
+
+    $("#formNewsletter").submit(function (e) {
+        try {
+            e.preventDefault();
+        } catch (e) {
+        }
+        learn.mailing.add($("#campoEmail").val(), true);
+
+        return false;
+    });
+
+    $(document).on('click', '.-fb-blue', function () {
+        FB.login(FBInst.checkLogin, FBInst.scope);
+    });
+
+    $(document).on('click', '.-google-red', function () {
+        gapi.auth.signIn(GPInst.getParams());
+    });
+
+    $(document).on('submit', '#abstractLoginForm', function () {
+        $('#sn_login')
+            .parents('.ui-dialog').hide()
+            .next().hide();
+
+        sendingContent('Autenticando...');
+    });
+
+    FBInst = new LearnCFB(address + '/');
+    GPInst = new LearnCGP(address + '/');
+});
+
+var learn = {
+    boot: function () {
+        $(".mostrarLista").click(function () {
+            learn.gaPush('/learn/track/show-all-categories');
+        });
+        $(".btnLoginCadastrar").click(function () {
+            learn.gaPush('/learn/track/home/sigin');
+        });
+        $(".btnCursoComprar").click(function () {
+            learn.gaPush('/learn/track/btn-comprar');
+        });
+        $(".btnTitulo").click(function () {
+            learn.gaPush('/learn/track/btn-titulo');
+        });
+        $(".btnImg").click(function () {
+            learn.gaPush('/learn/track/btn-img');
+        });
+        $(".btnTitulo").click(function () {
+            learn.gaPush('/learn/track/btn-titulo');
+        });
+
+        $("#pagFormas a").click(function () {
+            learn.gaPush("/learn/track/buy-option/" + $(this).attr("href"));
+        });
+
+        $(".curso a").click(function () {
+            if($(this).attr("p")=="" || $(this).attr("p")==null) return;
+            learn.gaPush("/learn/track/search/position/" + $(this).attr("p"));
+        });
+    },
+    stats: {
+        save: function (cou_id) {
+            if ($.cookie("course_" + cou_id) == "1") {
+                return;
+            }
+            $.ajax({
+                type : "POST",
+                url : address + '/course/savestat',
+                data : "cou_id=" + cou_id,
+                success : function () {
+                    /*silence*/
+                }
+            });
+        }
+    },
+    gaPush: function (url) {
+        try {
+            ga('send', 'pageview', url);
+        } catch (e) {
+        }
+    },
+    mailing: {
+        isInMailing: function () {
+            return $.cookie("mailing") != null && $.cookie("mailing").toString().trim() != "" && $.cookie("mailing").toString().trim() != "0";
+        },
+        showMSG: true,
+        add: function (email, showMSG) {
+            if (showMSG !== undefined) {
+                learn.mailing.showMSG = showMSG;
+            }
+            if (!learn.checkEmail(email)) {
+                learn.alert("Para receber nossa newsletter, por favor, preencha um email valido.");
+                $("#campoEmail").focus();
+                return;
+            }
+
+            if (learn.mailing.showMSG)
+                learn.gaPush("/track/mailing/add");
+
+            $.ajax({
+                type : "POST",
+                dataType : 'json',
+                url : address + "/mailing/add",
+                data : 'email=' + email,
+                success : function (json) {
+                    var exp = new Date();
+                    var minutes = 129600;
+
+                    exp.setTime(exp.getTime() + (minutes * 60 * 1000));
+
+                    $.cookie("mailing", json.id, {
+                        expires: exp,
+                        path: '/'
+                    });
+
+                    if (learn.mailing.showMSG) {
+                        learn.alert(json.msg);
+                        $("#campoEmail").val('');
+                    }
+
+                    learn.track.save();
+                }
+            });
+        },
+        getId: function () {
+            return $.cookie("mailing");
+        }
+    },
+    checkEmail: function (email) {
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    },
+    alert: function (msg, options) {
+        var def_options = {
+            content : '<div class="learnAlert">'+msg+'</div><button class="btn btnOK">OK</button>'
+        };
+
+        $.extend(def_options, options);
+
+        $.fancybox(def_options);
+
+        $('.btnOK').click(function () {
+            $.fancybox.close();
+        });
+    },
+    checkCPF: function (cpf) {
+        cpf = cpf.replace(/[^\d]+/g, '');
+        if (cpf == '')
+            return false;
+        if (cpf.length != 11 || cpf == "00000000000" || cpf == "11111111111" || cpf == "22222222222" || cpf == "33333333333" || cpf == "44444444444" || cpf == "55555555555" || cpf == "66666666666" || cpf == "77777777777" || cpf == "88888888888" || cpf == "99999999999")
+            return false;
+        add = 0;
+        for (i = 0; i < 9; i ++)
+            add += parseInt(cpf.charAt(i)) * (10 - i);
+        rev = 11 - (add % 11);
+        if (rev == 10 || rev == 11)
+            rev = 0;
+        if (rev != parseInt(cpf.charAt(9)))
+            return false;
+        add = 0;
+        for (i = 0; i < 10; i ++)
+            add += parseInt(cpf.charAt(i)) * (11 - i);
+        rev = 11 - (add % 11);
+        if (rev == 10 || rev == 11)
+            rev = 0;
+        if (rev != parseInt(cpf.charAt(10)))
+            return false;
+        return true;
+    },
+    track: {
+        navCats: new Array(),
+        boot: function () {
+            if (learn.track.bootFinished) {
+                return;
+            }
+
+            valCookie = $.cookie("navcats");
+
+            if (valCookie != "" && valCookie != null) {
+                var vals = valCookie.split(",");
+
+                for (x in vals) {
+                    learn.track.add(parseInt(vals[x]));
+                }
+            }
+        },
+        add: function (id) {
+            if (typeof (id) != "number") {
+                return id;
+            }
+
+            if (learn.track.navCats.indexOf(id) === -1) {
+                learn.track.navCats.push(id);
+            }
+
+            learn.track.save();
+
+            return id;
+        },
+        save: function () {
+            var exp = new Date();
+            var minutes = 129600;
+
+            exp.setTime(exp.getTime() + (minutes * 60 * 1000));
+
+            if (learn.track.navCats != "") {
+                $.cookie("navcats", learn.track.navCats, {
+                    expires: exp,
+                    path: '/'
+                });
+
+                if (learn.mailing.isInMailing()) {
+                    $.ajax({
+                        url : address + '/mailing/track',
+                        data : "&c[]=" + learn.track.navCats.join("&c[]=") + "&mlg_id=" + learn.mailing.getId(),
+                        success : function () {
+                            $.cookie("navcats", null, {
+                                expires: exp,
+                                path: '/'
+                            });
+                        }
+                    });
+                }
+            }
+        }
+    },
+    // Create an abstract form to allow the User to log-in with your Facebook account
+    createAbstractLoginForm: function (params, url) {
+        var form = document.createElement('form');
+
+        form.setAttribute('method', 'POST');
+        form.setAttribute('action', url);
+        form.setAttribute('id', 'abstractLoginForm');
+
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                var hiddenField = document.createElement('input');
+
+                hiddenField.setAttribute('type', 'hidden');
+                hiddenField.setAttribute('name', key);
+                hiddenField.setAttribute('value', params[key]);
+
+                form.appendChild(hiddenField);
+            }
+        }
+
+        document.body.appendChild(form);
+
+        return form;
+    },
+    // URLs
+    checkEmailUrl: 'account/checkemail',
+    loginUrl: 'entrar',
+    signUpUrl: 'account/signup',
+    // Close security modal
+    closeSecurityModal: function () {
+        sendingContent(null, true);
+
+        $('#overlay').click();
+    },
+    loginMessage: 'Você ainda não conectou sua conta do <span class="sn_name"></span> ao Learncafe.<br>Para fazer isso, informe os dados abaixo e prossiga!',
+    guessMessage: 'Você já possui conta no Learncafe?'
+}
+
+function submitButtonWaiting(status, id) {
+    if (status == "stop") {
+        // DISABLE SUBMIT BUTTON AND CHANGE TEXT
+        backup_text = $(id).val();
+        $(id).val("Aguarde");
+
+        interval = window.setInterval(function () {
+            var text = $(id).val();
+            if (text.length < 10) {
+                $(id).val(text + '.');
+            } else {
+                $(id).val("Aguarde");
+            }
+        }, 200);
+
+        $(id).attr('disabled', 'disabled');
+    }
+
+    if (status == "continue") {
+
+        // REENABLE SUBMIT BUTTON AND CHANGE TEXT
+        window.clearInterval(interval);
+        $(id).val(backup_text);
+        $(id).removeAttr('disabled');
+    }
+}
+
+var signUpFeedback = function (feedback) {
+    // parse feedback and print message
+    feedback = $.parseJSON(feedback);
+    message = $('<div />').html(feedback.msg).text();
+
+    // if the signup form has no error
+    if (feedback.status) {
+        // show the generated password to the user
+        alert(message);
+        // redirect the user
+        window.location = feedback.redirect;
+    } else {
+        // show the errors
+        alert(message);
+    }
+};
+
+function checkFields(check_terms) {
+    // Validate terms of use
+    if (check_terms == true) {
+        if (document.getElementById('usr_terms').checked == false) {
+            learn.gaPush('/learn/track/erro/cadastro/termos-uso');
+            learn.alert("Você deve concordar com os TERMOS DE USO para se cadastrar.");
+            $("#div_usr_terms").fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150);
+            return false;
+        }
+    }
+
+    // Validate email
+    if ($("#usr_email").val() == "") {
+        learn.gaPush('/learn/track/erro/cadastro/email');
+        learn.alert("Por favor, preencha o seu EMAIL para cadastrar-se conosco.");
+        $("#div_email").fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150);
+        $("#usr_email").focus();
+        return false;
+    }
+
+    if ($("#usr_email").val() != "" && ($("#usr_email").val() != $("#usr_email_confirm").val())) {
+
+        learn.alert("Seu EMAIL não está idêntico à confirmação, preencha novamente com atenção.");
+        $("#div_email").fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150);
+        $("#usr_email").focus();
+        return false;
+    }
+
+    // User fullname
+    if ($("#usr_fullname").val() == "") {
+        learn.gaPush('/learn/track/erro/cadastro/nome');
+        learn.alert("Por favor, preencha o seu NOME COMPLETO para cadastrar-se conosco.");
+        $("#usr_fullname").focus();
+        return false;
+    }
+
+    // Validate CPF
+    if ($('#usr_cpf').val() != '') {
+        if (!learn.checkCPF($("#usr_cpf").val())) {
+            learn.gaPush('/learn/track/erro/cadastro/cpf');
+            learn.alert("O CPF informado é inválido, preencha corretamente seu CPF.");
+            $("#usr_cpf").focus();
+            return false;
+        }
+    }
+
+    if ($("#sin_id").length && !$("#sin_id").val()) {
+        learn.alert("Por favor, preencha o campo SINDICATO para cadastrar-se conosco.");
+        $("#sin_id").fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150);
+        $("#sin_id").focus();
+        return false;
+    }
+
+    if ($("#usr_csiid").length && !$("#usr_csiid").val()) {
+        learn.alert("Por favor, preencha o campo CIDADE para cadastrar-se conosco.");
+        $("#usr_csiid").fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150);
+        $("#usr_csiid").focus();
+        return false;
+    }
+
+    return true;
+}
+
+//DREPRECATED FUNCTIONS
+function openDialog(divID, dialogWidth, dialogHeight, dialogTitle) {
+    if (dialogTitle && $('> h2',divID).length === 0) {
+        $(divID).prepend($('<h2>').text(dialogTitle));
+    }
+
+    $.fancybox($(divID));
+}
+
+function openDialogDynamic(url, dialogWidth, dialogHeight, dialogTitle) {
+    $.fancybox({
+        type : "ajax",
+        href: url
+    });
+}
+
+function HideTools(d) {
+    $("#" + d).hide();
+}
+
+function ShowTools(d) {
+    $("#" + d).show();
+}
+
+function validarCPF(cpf) {
+    return learn.checkCPF(cpf);
+}
+
+// From: https://developer.mozilla.org/en-US/docs/Web/API/Window.location
+var oGetVars = new (function (sSearch) {
+    if (sSearch.length > 1) {
+        for (var aItKey, nKeyId = 0, aCouples = sSearch.substr(1).split('&'); nKeyId < aCouples.length; nKeyId++) {
+            aItKey = aCouples[nKeyId].split('=');
+            this[unescape(aItKey[0])] = aItKey.length > 1 ? unescape(aItKey[1]) : '';
+        }
+    }
+})(window.location.search);
+
+// Show a modal for loading content
+var sendingContent = function (message, hide) {
+    if (hide) {
+        $.fancybox.close();
+
+        return;
+    }
+
+    var $modal = $('#modal-sending-content');
+
+    $('#login, #signup').css({zIndex: 0});
+
+    $('.message', $modal).html(message);
+
+    $.fancybox($modal);
+};
+
+/**
+ * Learncafe Facebook Control Object
+ *
+ * @author Lucas Mezêncio
+ *
+ * @param  {string} address
+ */
+var LearnCFB = function (address) {
+    var self = this;
+
+    // APP_ID and SCOPE for login
+    this.appId = '185617784805892';
+    this.scope = {
+        scope: [
+            'email',
+            'user_birthday',
+            'user_hometown,user_location',
+            'publish_actions'
+        ].join()
+    };
+
+    // URLs
+    this.address = address;
+    this.linkUrl = self.address + 'account/linkfb';
+    this.checkFBIdUrl = self.address + 'account/checkfbid';
+
+    // Constructor
+    this.init = (function () {
+        $.ajaxSetup({cache: true});
+        $.getScript('//connect.facebook.net/pt_BR/all.js', function () {
+            FB.init({
+                appId: self.appId
+            });
+            FB.getLoginStatus(self.getLoginStatus);
+        });
+    })();
+
+    // Do the login
+    this.login = function (link) {
+        self.link = link;
+        FB.login(self.checkLogin, self.scope);
+    };
+
+    // Check if the user accepted or not the auth
+    this.checkLogin = function (resp) {
+        if (resp.authResponse) {
+            sendingContent('Autenticando...');
+            // authResponse : {accessToken, expiresIn, signedRequest, userId}
+            FB.api('/me', function (resp) {
+                // Facebook User object
+                self.me = resp;
+                self.checkFBID();
+            });
+        } else {
+            // User cancelled login or did not fully authorize
+            sendingContent(null, true);
+        }
+    };
+
+    // Check if the User is already signed in in Facebook
+    this.getLoginStatus = function (resp) {
+    };
+
+    // Check if the User already have an account
+    this.checkFBID = function () {
+        $.ajax({
+            type : 'GET',
+            url : self.checkFBIdUrl,
+            data : {
+                usr_login_fbid: self.me.id
+            },
+            dataType : 'json',
+            success : function (data) {
+                if (data.status || self.link) {
+                    // LOGIN
+                    if (data.usr_login_fbid) {
+                        // User already have an account
+                        self.me.email = data.usr_email;
+                        self.signIn(data.usr_login_fbid);
+                        return;
+                    }
+
+                    self.linkAccounts();
+                    return;
+                }
+
+                self.guessUser();
+                return;
+            }
+        });
+    };
+
+    // Check if the User already have an account
+    this.checkEmail = function () {
+        $.ajax({
+            type : 'GET',
+            url : self.address + learn.checkEmailUrl,
+            data : {
+                email: self.me.email
+            },
+            dataType : 'json',
+            success : function (data) {
+                if (data.status) {
+                    // LOGIN
+                    if (data.usr_login_fbid || self.link) {
+                        // User already have an account
+                        self.signIn(data.usr_login_fbid);
+
+                        return;
+                    }
+
+                    self.linkAccounts();
+
+                    return;
+                }
+
+                self.guessUser();
+
+                return;
+            }
+        });
+    };
+
+    // Guess user if already have an account
+    this.guessUser = function () {
+        $('.sn_msg', '#sn_login').html(learn.guessMessage);
+        $('#fb_email').hide();
+        $('#usr_login').get()[0].setAttribute('type', 'text');
+        $('#fb_id').val(self.me.id);
+        $('#fb_link').val(self.me.link);
+        $('#fb_email').val(self.me.email);
+        $('h2', '#sn_login').html("Olá " + self.me.first_name + "");
+
+        sendingContent(null, true);
+
+        $.fancybox(
+            $("#sn_login"),
+            {
+                modal : true,
+                afterClose : function () {
+                    if ($('#usr_sycid').length) {
+                        self.syndicate = true;
+                        self.fillSyndicate();
+
+                        return;
+                    }
+
+                    // SIGN UP
+                    // User do not have an account yet
+                    sendingContent('Autenticando...');
+
+                    self.signUp();
+
+                    return;
+                }
+            }
+        );
+    };
+
+    //
+    this.fillSyndicate = function () {
+        openDialog('#sn_syndicate');
+        loadSyndicate2City($('#syn_id_sn').val(), '#usr_sycid_sn');
+
+        $('#sn_signup').on('click', function () {
+            if (!$('#usr_sycid_sn').val()) {
+                alert('Por favor, preencha o campo CIDADE para cadastrar-se conosco.');
+                $('#usr_sycid_sn').parent().effect('pulsate', 250);
+
+                return;
+            }
+
+            sendingContent('Autenticando...');
+            self.signUp();
+
+            return;
+        });
+    };
+
+    // Do the User sign-up
+    this.signUp = function () {
+        var formData = {
+            usr_email : self.me.email,
+            usr_email_confirm : self.me.email,
+            usr_fullname : self.me.name,
+            usr_login_fbid : self.me.id,
+            usr_link_facebook : self.me.link
+        };
+
+        if (self.syndicate === true) {
+            $.extend(true, formData, {
+                usr_sycid: $('#usr_sycid_sn').val()
+            });
+        }
+
+        $.ajax({
+            type : 'POST',
+            url : self.address + learn.signUpUrl,
+            data : formData,
+            success : signUpFeedback
+        });
+    };
+
+    // Do the User sign-in
+    this.signIn = function (fb_id) {
+        if (self.me.id === fb_id) {
+            var form = learn.createAbstractLoginForm({
+                usr_login_fbid : fb_id,
+                usr_login : self.me.email,
+                continue : oGetVars.continue !== undefined ? oGetVars.continue : ''
+            }, self.address + learn.loginUrl);
+
+            form.submit();
+
+            return true;
+        }
+
+        return false;
+    };
+
+    // Call the Login form if the User want to merge the accounts
+    this.linkAccounts = function () {
+        if (self.link) {
+            $.ajax({
+                type : 'POST',
+                url : self.linkUrl,
+                data : {
+                    usr_login_fbid: self.me.id,
+                    usr_link_facebook: self.me.link
+                },
+                dataType : 'json',
+                success : function (data) {
+                    if (data.status) {
+                        $('#usr_link_facebook').val(self.me.link);
+                        $('#fb_link_account')
+                            .html('Desconectar sua conta do Facebook')
+                            .attr({
+                                id: 'fb_unlink_account'
+                            });
+
+                        sendingContent(null, true);
+
+                        if (typeof data.avatar !== 'undefined') {
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+
+            return;
+        }
+
+        $('.sn_msg', '#sn_login').html(learn.loginMessage);
+        $('.sn_name', '#sn_login').html('Facebook');
+        $('#fb_id').val(self.me.id);
+        $('#fb_link').val(self.me.link);
+        $('#fb_email').html(self.me.email);
+        $('#usr_login').val(self.me.email);
+        $('.fb_first_name', '#sn_login').html(self.me.first_name);
+        $('#login, #signup').css({zIndex: 0});
+
+        openDialog('#sn_login');
+
+        $('#sn_login').on('dialogclose', function (e, ui) {
+            learn.closeSecurityModal();
+        });
+
+        return;
+    };
+};
+
+/**
+ * Learncafe Google Signin Control Object
+ *
+ * @author Lucas Mezêncio
+ *
+ * @param {string} address
+ */
+var LearnCGP = function (address) {
+    var self = this;
+
+    this.clientId = '362974828690-uhk7lni0d796o650qvdntjdmovql41g3.apps.googleusercontent.com';
+    this.scopes = [
+        'https://www.googleapis.com/auth/plus.login',
+        'https://www.googleapis.com/auth/plus.me',
+        'https://www.googleapis.com/auth/userinfo.email'
+    ].join(' ');
+    this.cookiepolicy = 'single_host_origin';
+
+    // URLs
+    this.address = address;
+    this.linkUrl = address + 'account/linkgp';
+    this.checkGPIdUrl = address + 'account/checkgpid';
+    this.started = false;
+
+    // Constructor
+    this.init = (function () {
+        ;
+        (function () {
+            var po = document.createElement('script');
+            po.type = 'text/javascript';
+            po.async = true;
+            po.src = 'https://apis.google.com/js/client:plusone.js?onload=render';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(po, s);
+        })();
+    })();
+
+    //
+    this.getParams = function () {
+        // Additional params including the callback, the rest of the params will
+        // come from the page-level configuration.
+        return {
+            callback : self.signinCallback,
+            cookiepolicy : self.cookiepolicy,
+            scope : self.scopes,
+            clientid : self.clientId
+        };
+    }
+
+    //
+    this.signinCallback = function (authResult) {
+        if (authResult['status']['signed_in']) {
+            // Workaround because the API is triggering the signinCallback twice
+            if (this.started) {
+                return false;
+            }
+
+            sendingContent('Autenticando...');
+            this.started = true;
+            // Update the app to reflect a signed in user
+            gapi.client.load('plus', 'v1', self.getPlusPeople);
+        } else {
+            // Update the app to reflect a signed out user
+            // Possible error values:
+            //   "user_signed_out" - User is signed-out
+            //   "access_denied" - User denied access to your app
+            //   "immediate_failed" - Could not automatically log in the user
+            if (authResult.error == 'access_denied') {
+                sendingContent(null, true);
+            }
+        }
+    };
+
+    //
+    this.getPlusPeople = function () {
+        var request = gapi.client.plus.people.get({
+            'userId': 'me'
+        });
+
+        request.execute(self.executeCallback);
+    };
+
+    //
+    this.executeCallback = function (resp) {
+        self.usr = resp;
+
+        if (self.link === true) {
+            self.checkGPID();
+
+            return;
+        }
+
+        self.checkEmail();
+
+        return;
+    };
+
+    // Check if the User already have an account
+    this.checkEmail = function () {
+        $.ajax({
+            type : 'GET',
+            url : self.address + learn.checkEmailUrl,
+            data : {
+                email: self.usr.emails[0].value
+            },
+            dataType : 'json',
+            success : function (data) {
+                if (data.status) {
+                    // LOGIN
+                    if (data.usr_login_gpid) {
+                        // User already have an account
+                        self.signIn(data.usr_login_gpid);
+
+                        return;
+                    }
+
+                    self.linkAccounts();
+
+                    return;
+                }
+
+                self.guessUser();
+
+                return;
+            }
+        });
+    };
+
+    //
+    this.guessUser = function () {
+        $('.sn_msg', '#sn_login').html(learn.guessMessage);
+        $('#gp_email').hide();
+        $('#usr_login').get()[0].setAttribute('type', 'text');
+        $('#gp_id').val(self.usr.id);
+        $('#gp_link').val(self.usr.url);
+        $('#gp_email').val(self.usr.emails[0].value);
+        $('.gp_first_name', '#sn_login').html(self.usr.displayName.split(' ')[0]);
+
+        sendingContent(null, true);
+
+        $.fancybox(
+            $("#sn_login"),
+            {
+                modal : true,
+                afterClose : function () {
+                    if ($('#usr_sycid').length) {
+                        self.syndicate = true;
+                        self.fillSyndicate();
+
+                        return;
+                    }
+
+                    // SIGN UP
+                    // User do not have an account yet
+                    sendingContent('Autenticando...');
+
+                    self.signUp();
+
+                    return;
+                }
+            }
+        );
+    };
+
+    //
+    this.fillSyndicate = function () {
+        openDialog('#sn_syndicate', 460, null, 'Dados do Sindicato');
+        loadSyndicate2City($('#syn_id_sn').val(), '#usr_sycid_sn');
+
+        $('#sn_signup').on('click', function () {
+            if (!$('#usr_sycid_sn').val()) {
+                alert('Por favor, preencha o campo CIDADE para cadastrar-se conosco.');
+                $('#usr_sycid_sn').parent().effect('pulsate', 250);
+
+                return;
+            }
+
+            sendingContent('Autenticando...');
+            self.signUp();
+
+            return;
+        });
+    };
+
+    // Do the User sign-up
+    this.signUp = function () {
+        $.ajax({
+            type : 'POST',
+            url : self.address + learn.signUpUrl,
+            data : {
+                usr_email: self.usr.emails[0].value,
+                usr_email_confirm: self.usr.emails[0].value,
+                usr_fullname: self.usr.displayName,
+                usr_login_gpid: self.usr.id,
+                usr_link_google: self.usr.url
+            },
+            success : signUpFeedback
+        });
+    };
+
+    // Do the User sign-in
+    this.signIn = function (gp_id) {
+        if (self.usr.id === gp_id) {
+            var form = learn.createAbstractLoginForm({
+                usr_login_gpid: gp_id,
+                usr_login: self.usr.emails[0].value,
+                continue: oGetVars.continue !== undefined ? oGetVars.continue : ''
+            }, self.address + learn.loginUrl);
+
+            form.submit();
+
+            return true;
+        }
+
+        return false;
+    };
+
+    // Call the Login form if the User want to merge the accounts
+    this.linkAccounts = function () {
+        if (self.link) {
+            $.ajax({
+                type : 'POST',
+                url : self.linkUrl,
+                data : {
+                    usr_login_gpid: self.usr.id,
+                    usr_link_google: self.usr.url
+                },
+                dataType : 'json',
+                success : function (data) {
+                    if (data.status) {
+                        $('#usr_link_google').val(self.usr.url);
+                        $('#gp_link_account')
+                            .html('Desconectar sua conta do Google+')
+                            .attr({
+                                id: 'gp_unlink_account'
+                            });
+
+                        sendingContent(null, true);
+
+                        if (typeof data.avatar !== 'undefined') {
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+
+            return;
+        }
+
+        $('.sn_msg', '#sn_login').html(learn.loginMessage);
+        $('.sn_name', '#sn_login').html('Google+');
+        $('#gp_id').val(self.usr.id);
+        $('#gp_link').val(self.usr.url);
+        $('#fb_email').html(self.usr.emails[0].value);
+        $('#usr_login').val(self.usr.emails[0].value);
+        $('.fb_first_name', '#sn_login').html(self.usr.displayName.split(' ')[0]);
+        $('#login, #signup').css({zIndex: 0});
+
+        openDialog('#sn_login');
+
+        $('#sn_login').on('dialogclose', function (e, ui) {
+            learn.closeSecurityModal();
+        });
+
+        return;
+    };
+
+    // Do the login
+    this.login = function (link) {
+        self.link = link;
+        FB.login(self.checkLogin, self.scope);
+    };
+
+    //
+    this.setLink = function (link) {
+        self.link = link;
+
+        return self;
+    };
+
+    // Check if the User already have an account
+    this.checkGPID = function () {
+        $.ajax({
+            type : 'GET',
+            url : self.checkGPIdUrl,
+            data : {
+                usr_login_gpid: self.usr.id
+            },
+            dataType : 'json',
+            success : function (data) {
+                if (data.status || self.link) {
+                    // LOGIN
+                    if (data.usr_login_gpid) {
+                        // User already have an account
+                        self.me.email = data.usr_email;
+                        self.signIn(data.usr_login_gpid);
+
+                        return;
+                    }
+
+                    self.linkAccounts();
+
+                    return;
+                }
+
+                self.guessUser();
+
+                return;
+            }
+        });
+    };
+};

@@ -1,0 +1,9 @@
+@charset "ISO-8859-1";
+/*Position da Progress BY Elias Alves*/
+body{
+}
+.positionProgress{
+position:absolute;
+left: 367px;
+top:310px;
+}
